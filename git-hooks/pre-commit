@@ -1,0 +1,57 @@
+#!/usr/bin/bash
+
+set -e
+
+manifests=$(find manifests -type f  -name '*.yaml' )
+branch_name=$(git rev-parse --abbrev-ref HEAD)
+valid_branch_pattern=$'^(feature|fix|docs)/[a-z0-9-]+$'
+
+# Archivos en staged
+files=$(git diff --cached --name-only)
+
+echo "Verificando nombre de la rama..."
+
+if [[ ! $branch_name =~ $valid_branch_pattern ]]; then
+    echo "Error: '$branch_name' no es un nombre valido para la rama."
+    echo "Usa: feature/* fix/* docs/*"
+    exit 1
+fi
+
+echo "Nombre valido para la rama."
+
+if [ -z "$manifests" ]; then
+  echo "No hay manifestos creados."
+  exit 0
+fi
+
+error=0
+echo "Verificando manifiestos..."
+
+for manifest in $manifests; do
+  echo "Validando $manifest..."
+  python "$(dirname "$0")/../scripts/validate_manifest.py" "$manifest" || error=1
+done
+
+if [ $error -eq 1 ]; then
+  echo "Fallas en la validación."
+  exit 1
+fi
+
+echo "Todos los manifiestos son validos."
+
+exit 0
+
+# --- en progreso ---
+
+# linting con flake8
+python_files=$(echo "$files" | grep -E '\.py$' || true)
+
+if [[ -n "$python_files" ]]; then
+  flake8 --select=E9,F63,F7,F82 --show-source $python_files
+  if [[ $? -ne 0 ]]; then
+    echo "Error: flake8 encontró sintáxis incorrecta."
+    exit 1
+  fi
+fi
+
+echo "Pasó las pruebas con flake8"
