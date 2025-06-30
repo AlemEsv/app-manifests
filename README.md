@@ -1,3 +1,3 @@
 # app-manifests
 
-texto de ejemplo
+Texto de ejemplo
