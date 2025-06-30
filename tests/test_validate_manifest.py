@@ -1,11 +1,8 @@
-
-
-
-
 import os
 import tempfile
 import pytest
 from scripts.validate_manifest import validate
+
 
 def create_temp_yaml(content):
     """
@@ -17,6 +14,7 @@ def create_temp_yaml(content):
     with os.fdopen(fd, 'w') as tmp:
         tmp.write(content)
     return path
+
 
 def test_validate_valid_yaml():
     """
@@ -37,6 +35,7 @@ def test_validate_valid_yaml():
         # Elimina el archivo temporal
         os.remove(path)
 
+
 def test_validate_invalid_yaml():
     """
     Prueba que un manifiesto YAML inválido provoca SystemExit.
@@ -54,6 +53,7 @@ def test_validate_invalid_yaml():
         validate(path)
     # Elimina el archivo temporal
     os.remove(path)
+
 
 def test_validate_nonexistent_file():
     """
