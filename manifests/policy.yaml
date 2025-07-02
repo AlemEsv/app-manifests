@@ -1,0 +1,22 @@
+# Política de red para controlar el tráfico de entrada a la aplicación Flask
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: python-flask-policy
+  labels:
+    app: python-flask
+spec:
+  # Selecciona los pods que tendrán esta política aplicada
+  podSelector:
+    matchLabels:
+      app: python-flask
+  
+  # Tipos de políticas a aplicar
+  policyTypes:
+  - Ingress
+  
+  # Reglas de tráfico de entrada
+  ingress:
+  - ports:
+    - protocol: TCP
+      port: 5000  # Conexión permitida

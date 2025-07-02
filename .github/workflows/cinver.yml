@@ -1,0 +1,44 @@
+name: CI - Creación de politicas
+
+on: 
+  push:
+  pull_request:
+    branches: [feature/cinver/politicas-red]
+
+jobs:
+  build:
+    name: Pruebas de creacion de politicas de ingreso
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    # 1) Validación estática
+    - name: Instalar kubeconform
+      run: |
+        curl -L https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz -o kubeconform.tar.gz
+        tar -xzvf kubeconform.tar.gz
+        sudo mv kubeconform /usr/local/bin/
+
+    - name: Validar manifiestos
+      run: kubeconform manifests/
+
+    # 2) Iniciar cluster de kubernetes local
+    - name: Iniciar minikube
+      uses: medyagh/setup-minikube@master
+      with:
+        minikube-version: 1.36.0
+        kubernetes-version: 1.28.3
+    
+    # 3) Aplicar y verificar políticas
+    - name: Desplegar manifiestos
+      run: kubectl apply -f manifests/
+
+    - name: Verificar políticas creadas
+      run: |
+        kubectl get networkpolicy
+        kubectl describe networkpolicy python-flask-policy
+
+    - name: Cleanup
+      run: kubectl delete -f manifests/

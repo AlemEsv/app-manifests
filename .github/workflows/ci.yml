@@ -42,4 +42,3 @@ jobs:
       - name: Ejecutar shellcheck en scripts
         run: |
           find . -name "*.sh" -type f | xargs shellcheck || true
-
