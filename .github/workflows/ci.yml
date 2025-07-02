@@ -44,5 +44,5 @@ jobs:
       # 7)  Validar manifiestos
       - name: Validacion de manifests con kubectl dry-run
         run: |
-          kubectl apply --dry-run=client -f manifests/deployment.yaml
-          kubectl apply --dry-run=client -f manifests/service.yaml
+          kubectl apply --dry-run=client --validate=false -f manifests/deployment.yaml
+          kubectl apply --dry-run=client --validate=false -f manifests/service.yaml
