@@ -24,16 +24,24 @@ jobs:
       # 4) instalar kubeconform
       - name: Instalar kubeconform
         run: |
-          curl -L https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | 
-          tar xz sudo mv kubeconform /usr/local/bin/
+          curl -L https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz -o kubeconform.tar.gz
+          tar -xzvf kubeconform.tar.gz
+          sudo mv kubeconform /usr/local/bin/
+
+      # 5) Instalar kubectl
+      - name: Instalar kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
       
-      # 5) Linting con kubeconform
+      # 6) Linting con kubeconform
       - name: Linter para los manifiestos
         run: |
           kubeconform manifests/deployment.yaml
           kubeconform manifests/service.yaml
       
-      # 6)  Valida manifiestos
+      # 7)  Validar manifiestos
       - name: Validacion de manifests con kubectl dry-run
         run: |
           kubectl apply --dry-run=client -f manifests/deployment.yaml
