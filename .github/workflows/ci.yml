@@ -16,26 +16,33 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.x"
+        
+      # 3) iniciar cluster de kubernetes local
+      - name: Iniciar minikube
+        uses: medyagh/setup-minikube@master
+        with:
+          minikube-version: 1.36.0
+          kubernetes-version: 1.28.3
 
-      # 3) Construcción de imagen con Dockerfile
+      # 4) Construcción de imagen con Dockerfile
       - name: Build Docker image
         run: docker build -t app-manifests:latest .
 
-      # 4) instalar kubeconform
+      # 5) instalar kubeconform
       - name: Instalar kubeconform
         run: |
           curl -L https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz -o kubeconform.tar.gz
           tar -xzvf kubeconform.tar.gz
           sudo mv kubeconform /usr/local/bin/
 
-      # 5) Instalar kubectl
+      # 6) Instalar kubectl
       - name: Instalar kubectl
         run: |
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           chmod +x kubectl
           sudo mv kubectl /usr/local/bin/
       
-      # 6) Linting con kubeconform
+      # 7) Linting con kubeconform
       - name: Linter para los manifiestos
         run: |
           kubeconform manifests/deployment.yaml
