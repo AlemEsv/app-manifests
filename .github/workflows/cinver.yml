@@ -1,9 +1,8 @@
 name: CI - Creación de politicas
 
-on: 
-  push:
+on:
   pull_request:
-    branches: [feature/cinver/politicas-red]
+    branches: [main]
 
 jobs:
   build:
