@@ -5,11 +5,11 @@ set -e
 # Función para verificar el nombre de la rama
 verificar_rama() {
   local branch_name=$(git rev-parse --abbrev-ref HEAD)
-  local valid_branch_pattern='^(feature|fix|docs)/[a-z0-9-]+$'
+  local valid_branch_pattern='^(develop|feature|fix|docs)/[a-z0-9-/]+$'
   echo "Verificando nombre de la rama..."
   if [[ ! $branch_name =~ $valid_branch_pattern ]]; then
     echo "Error: '$branch_name' no es un nombre valido para la rama."
-    echo "Usa: feature/* fix/* docs/*"
+    echo "Usa: develop/* feature/* fix/* docs/*"
     exit 1
   fi
   echo "Nombre valido para la rama."
