@@ -1,0 +1,44 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) Traer el código del repositorio
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2) Instalar python
+      - name: Instalar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      # 3) Instalar Node.js para jscpd
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # 4) Evaluación de duplicación con jscpd
+      - name: Instalar jscpd
+        run: npm install -g jscpd
+
+      - name: Verificar código duplicado
+        run: |
+          jscpd --threshold 30 --format yaml,javascript,shell \
+                --pattern "**/*.{yaml,yml,js,sh}" \
+                --reporters console,json \
+                --output ./jscpd-report.json
+        continue-on-error: false
+
+      # 5) Linters estáticos
+      - name: Instalar shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Ejecutar shellcheck en scripts
+        run: |
+          find . -name "*.sh" -type f | xargs shellcheck || true
