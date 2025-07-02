@@ -1,0 +1,41 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) Traemos el código
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2) Instalar python
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      # 3) Construcción de imagen con Dockerfile
+      - name: Build Docker image
+        run: docker build -t app-manifests:latest .
+
+      # 4) instalar homebrew
+      - name: instalador para kubeconform
+        run: |
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      # 5) Linting con kubeconform
+      - name: Instalar kubeconform
+        run: |
+          brew install kubeconform
+      # 6) Verifica correcta sintaxis de manifiestos
+      - name: Linter para los manifiestos
+        run: |
+          kubeconform manifests/deployment.yaml
+          kubeconform manifests/service.yaml
+      # 7)  Valida manifiestos
+      - name: Validacion de manifests con kubectl dry-run
+        run: |
+          kubectl apply --dry-run=client -f manifests/deployment.yaml
+          kubectl apply --dry-run=client -f manifests/service.yaml
