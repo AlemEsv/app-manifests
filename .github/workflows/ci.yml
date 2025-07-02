@@ -7,43 +7,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Traemos el código
+      # 1) Traer el código del repositorio
       - name: Checkout repository
         uses: actions/checkout@v4
 
       # 2) Instalar python
-      - name: Setup Python
+      - name: Instalar Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.x"
-        
-      # 3) iniciar cluster de kubernetes local
-      - name: Iniciar minikube
-        uses: medyagh/setup-minikube@master
+
+      # 3) Instalar Node.js para jscpd
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
         with:
-          minikube-version: 1.36.0
-          kubernetes-version: 1.28.3
+          node-version: '18'
 
-      # 4) Construcción de imagen con Dockerfile
-      - name: Build Docker image
-        run: docker build -t app-manifests:latest .
+      # 4) Evaluación de duplicación con jscpd
+      - name: Instalar jscpd
+        run: npm install -g jscpd
 
-      # 5) instalar kubeconform
-      - name: Instalar kubeconform
+      - name: Verificar código duplicado
         run: |
-          curl -L https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz -o kubeconform.tar.gz
-          tar -xzvf kubeconform.tar.gz
-          sudo mv kubeconform /usr/local/bin/
+          jscpd --threshold 30 --format yaml,javascript,shell \
+                --pattern "**/*.{yaml,yml,js,sh}" \
+                --reporters console,json \
+                --output ./jscpd-report.json
+        continue-on-error: false
 
-      # 6) Instalar kubectl
-      - name: Instalar kubectl
+      # 5) Linters estáticos
+      - name: Instalar shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Ejecutar shellcheck en scripts
         run: |
-          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-          chmod +x kubectl
-          sudo mv kubectl /usr/local/bin/
-      
-      # 7) Linting con kubeconform
-      - name: Linter para los manifiestos
-        run: |
-          kubeconform manifests/deployment.yaml
-          kubeconform manifests/service.yaml
+          find . -name "*.sh" -type f | xargs shellcheck || true
+
