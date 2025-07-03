@@ -1,4 +1,4 @@
-# Política de red para controlar el tráfico de entrada a la aplicación Flask
+# Política de red para controlar el tráfico de entrada y salida a la aplicación Flask
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -14,9 +14,16 @@ spec:
   # Tipos de políticas a aplicar
   policyTypes:
   - Ingress
+  - Egress
   
   # Reglas de tráfico de entrada
   ingress:
   - ports:
     - protocol: TCP
       port: 5000  # Conexión permitida
+  
+  # Reglas de tráfico de salida
+  egress:
+  - ports:
+    - protocol: TCP
+      port: 80   # Conexión permita 
