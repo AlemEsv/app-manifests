@@ -1,0 +1,50 @@
+name: CI - Gestión de Secrets
+
+on:
+  push:
+    branches:
+      - feature/seminario/secrets
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout del repositorio
+      uses: actions/checkout@v4
+
+    - name: Instalar Minikube
+      uses: medyagh/setup-minikube@master
+      with:
+        minikube-version: '1.36.0'
+        kubernetes-version: '1.28.3'
+
+    - name: Instalar kubectl
+      run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/  
+        
+    - name: Instalar kubeconform
+      run: |
+          curl -L https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz -o kubeconform.tar.gz
+          tar -xzvf kubeconform.tar.gz
+          sudo mv kubeconform /usr/local/bin/
+
+    - name: Mostrar estado del clúster
+      run: kubectl get nodes
+
+    - name: Build imagen Docker
+      run: |
+        docker build -t python-flask:latest .
+    
+    - name: Cargar imagen en Minikube
+      run: minikube image load python-flask:latest
+
+    - name: Aplicar manifiestos (incluyendo secretos)
+      run: |
+        kubectl apply -f manifests/
+
+    - name: Verificar secretos
+      run: |
+        kubectl get secrets app-secret -o yaml
